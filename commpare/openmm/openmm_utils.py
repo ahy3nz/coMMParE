@@ -5,19 +5,22 @@ import simtk.unit as unit
 
 def build_run_measure_openmm(structure, **kwargs):
     """ Build OpenMM simulation from a parmed.Structure """
-    omm_system = structure.createSystem()
+    try:
+        omm_system = structure.createSystem()
 
-    integrator = openmm.VerletIntegrator(1.0)
-    omm_context = openmm.Context(omm_system, integrator)
-    omm_context.setPositions(structure.positions)
+        integrator = openmm.VerletIntegrator(1.0)
+        omm_context = openmm.Context(omm_system, integrator)
+        omm_context.setPositions(structure.positions)
 
-    set_omm_force_groups(omm_context)
-    omm_force_groups = get_omm_force_groups(omm_context)
-    energies = {'openmm': {key: get_omm_energy(key, 
-                                                omm_force_groups, 
-                                                omm_context)._value
-                                                for key in omm_force_groups}}
-    df = pd.DataFrame.from_dict(energies, orient='index')
+        set_omm_force_groups(omm_context)
+        omm_force_groups = get_omm_force_groups(omm_context)
+        energies = {'openmm': {key: get_omm_energy(key, 
+                                                    omm_force_groups, 
+                                                    omm_context)._value
+                                                    for key in omm_force_groups}}
+        df = pd.DataFrame.from_dict(energies, orient='index')
+    except:
+        df = pd.DataFrame.from_dict({'openmm':{}}, orient='index')
 
     return df
 
