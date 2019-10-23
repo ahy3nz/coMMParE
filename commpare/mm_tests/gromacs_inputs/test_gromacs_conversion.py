@@ -22,10 +22,7 @@ class TestGromacsConversion(BaseTest):
             top_file = glob.glob("*.top")[0]
             gro_file = glob.glob("*.gro")[0]
             structure = pmd.load_file(top_file, xyz=gro_file)
-            try:
-                energies = commpare.spawn_engine_simulations(structure,
-                        hoomd_kwargs={'ref_distance':10, 'ref_energy':1/4.184})
-            except:
-                pass
+            energies = commpare.spawn_engine_simulations(structure,
+                    hoomd_kwargs={'ref_distance':10, 'ref_energy':1/4.184})
             print(energies)
             print('='*20)
