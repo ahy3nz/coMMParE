@@ -29,6 +29,8 @@ def get_omm_energy(key, omm_force_groups, omm_context):
     Default OpenMM energy units are kJ/mol"""
     if key == 'all':
         return (omm_context.getState(getEnergy=True).getPotentialEnergy())
+    if len(omm_force_groups[key]) == 0:
+        return 0 * unit.kilojoule_per_mole
     return (omm_context.getState(getEnergy=True, groups=omm_force_groups[key])
                         .getPotentialEnergy())
 
