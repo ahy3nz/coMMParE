@@ -13,7 +13,6 @@ class TestMosdefConversion(BaseTest):
         import foyer
         path_to_foyer_unit_tests = os.path.join(foyer.__path__[0],
                 'opls_validation/')
-        import pdb; pdb.set_trace()
         # Walk through each unit test folder, loading energy and print out
         unit_dirs = [folder for folder in os.listdir(path_to_foyer_unit_tests)
                 if (os.path.isdir(os.path.join(path_to_foyer_unit_tests,folder))
