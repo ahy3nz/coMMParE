@@ -39,5 +39,5 @@ structure used.
 ## MD engines for measuring energy (outputs)
 * [openmm](https://github.com/openmm/openmm) [(conda)](https://anaconda.org/omnia/openmm)
 * [hoomd](https://github.com/glotzerlab/hoomd-blue) [(conda)](https://anaconda.org/conda-forge/hoomd)
-* [gromacs](http://manual.gromacs.org/)
+* [gromacs](http://manual.gromacs.org/) [(conda)](https://anaconda.org/bioconda/gromacs)
     * [panedr](https://github.com/jbarnoud/panedr) [(conda)](https://anaconda.org/conda-forge/panedr)
