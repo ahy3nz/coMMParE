@@ -3,8 +3,10 @@ import foyer
 from mbuild.examples import Ethane, Alkane
 import commpare.openmm
 
+from commpare.tests.base_test import BaseTest
 
-class TestOpenMM:
+
+class TestOpenMM(BaseTest):
     def test_opls(self):
         eth = Alkane(n=10)
         cmpd = mb.fill_box(eth, n_compounds=10, box=[10,10,10])
