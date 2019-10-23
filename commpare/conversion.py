@@ -5,18 +5,25 @@ def spawn_engine_simulations(structure, engines=None,
         hoomd_kwargs={}):
     simulate_engine = {}
     if engines is None:
+        import commpare
         engines = commpare.identify_engines()
 
     # For each identified engine, measure energy, store in dataframe
     energies = pd.DataFrame()
     for engine in engines:
         if engine == 'gromacs':
-            energies.append(commpare.gromacs.build_run_measure_gromacs(structure))
+            import commpare.gromacs
+            energies = energies.append(
+                    commpare.gromacs.build_run_measure_gromacs(structure))
         if engine == 'openmm':
-            energies.append(commpare.openmm.build_run_measure_openmm(structure))
+            import commpare.openmm
+            energies = energies.append(
+                    commpare.openmm.build_run_measure_openmm(structure))
         if engine == 'hoomd':
-            energies.append(commpare.hoomd.build_run_measure_hoomd(structure,
-                **hoomd_kwargs))
+            import commpare.hoomd
+            energies = energies.append(
+                    commpare.hoomd.build_run_measure_hoomd(structure,
+                                                        **hoomd_kwargs))
 
     return energies
 
