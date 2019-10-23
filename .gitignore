@@ -63,3 +63,8 @@ mbuild/version.py
 
 # protobuf generated py file
 compound_pb2.py
+
+# MD files
+*.err
+*.out
+*.mdp
