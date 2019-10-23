@@ -1,6 +1,27 @@
 import pandas as pd
+
 from mbuild.formats.hoomd_simulation import create_hoomd_simulation
 import hoomd
+
+
+def build_run_measure_hoomd(structure, **kwargs):
+    """ Build and run a HOOMD simulation from a parmed.Structure """
+    create_hoomd_simulation(structure, **kwargs)
+
+    all_group = hoomd.group.all()
+    # Arbitrary small simulation
+    hoomd.md.integrate.mode_standard(dt=0.0000001)
+    hoomd.md.integrate.nve(all_group)
+    hoomd.run(1)
+
+    hoomd_force_groups = get_hoomd_force_groups()
+    energies = {'hoomd': {key: get_hoomd_energy(key, 
+                                                hoomd_force_groups, 
+                                                all_group) 
+                                                for key in hoomd_force_groups}}
+    df = pd.DataFrame.from_dict(energies, orient='index')
+
+    return df
 
 def get_hoomd_force_groups():
     """ Get various hoomd force objects 
@@ -52,21 +73,3 @@ def get_hoomd_energy(key, hoomd_force_groups, calc_group):
                         for a in hoomd_force_groups[key]])
     return total_energy
 
-def build_run_measure_hoomd(structure, **kwargs):
-    """ Build and run a HOOMD simulation from a parmed.Structure """
-    create_hoomd_simulation(structure, **kwargs)
-
-    all_group = hoomd.group.all()
-    # Arbitrary small simulation
-    hoomd.md.integrate.mode_standard(dt=0.0000001)
-    hoomd.md.integrate.nve(all_group)
-    hoomd.run(1)
-
-    hoomd_force_groups = get_hoomd_force_groups()
-    energies = {'hoomd': {key: get_hoomd_energy(key, 
-                                                hoomd_force_groups, 
-                                                all_group) 
-                                                for key in hoomd_force_groups}}
-    df = pd.DataFrame.from_dict(energies, orient='index')
-
-    return df
