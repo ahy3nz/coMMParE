@@ -69,6 +69,7 @@ def get_hoomd_energy(key, hoomd_force_groups, calc_group):
     -------
     total_energy : float"""
 
+    total_energy = 0
     total_energy = sum([a.get_energy(calc_group) 
                         for a in hoomd_force_groups[key]])
     return total_energy
