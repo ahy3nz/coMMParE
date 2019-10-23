@@ -24,6 +24,7 @@ While more-sophisticated packaging may come, here is a list of dependencies:
 ## Creating and parametrizing molecular models (inputs)
 * [mbuild](https://github.com/mosdef-hub/mbuild)
 * [foyer](https://github.com/mosdef-hub/foyer)
+* [parmed](https://github.com/ParmEd/ParmEd)
 * [openforcefield](https://github.com/openforcefield/openforcefield)
 
 ## MD-interconversion tools
