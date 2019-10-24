@@ -52,16 +52,20 @@ reference systems.
 * Desired Output: `pandas.DataFrame` containing energies
 * Given a `parmed.Structure` object, be able to use your MM engine to 
     build your simulation and measure the energy from the intial configuration
-    and molecular model parameters within the `parmed.Structure`. 
+    and molecular model parameters within the `parmed.Structure`.
     * If input files need to be written, please use the `tempfile` library
-    to create and dump files to a temp directory
-    * `commpare/gromacs` utilizes temp directories
+    to create and dump files to a temp directory 
+    (`commpare/gromacs` utilizes temp directories)
 * After building your MM engine's simulation, measure the energy and
 "canonicalize" the energy terms.
     * Ultimately, we want a `pandas.DataFrame` whose `index` is the MM engine
     with columns: `bond`, `angle`, `dihedral`, `nonbond`. The values should be
     energies in kJ/mol. The energy breakdown may be further decomposed, but 
     the goal for now is those 4 energy groups.
+* While a single function gets called, inputs `parmed.Structure` 
+(and possibly optional arguments like in `commpare/hoomd`), and 
+outputs a canonicalized `pandas.DataFrame`, helper functions
+are certainly welcomed and encouraged to enhance readability and debugging
 * `md_engines.py` will need to be updated to detect the new MM engine
 * `conversion.py` will need to be updated to convert and run the 
 `parmed.Structure` in the MD engine
