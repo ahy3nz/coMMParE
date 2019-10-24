@@ -19,7 +19,8 @@ The broad steps to compare energy via various permutations:
     * The `parmed.Structure` gets converted to its respective
     MM engine data object/format
 
-While more-sophisticated packaging may come, here is a list of possible dependencies,
+While more-sophisticated Python packaging may come, 
+here is a list of possible dependencies,
 with conda links where available. 
 The packages for "inputs" and "outputs" are not all required, just packages
 whose conversions/energy evaluations are supported here.
