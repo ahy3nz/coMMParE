@@ -67,7 +67,7 @@ reference systems.
 `parmed.Structure` in the MD engine
 * Add unit tests in `commpare/tests` that, given a `parmed.Structure`, will
 build the particular MM engine's simulation and return the `pandas.DataFrame`
-with canoncalized energy terms.
+with canonicalized energy terms.
 
 ## Contributing new MM tests
 * The goal is to test different molecular model/force field terms and
