@@ -62,7 +62,7 @@ reference systems.
     with columns: `bond`, `angle`, `dihedral`, `nonbond`. The values should be
     energies in kJ/mol. The energy breakdown may be further decomposed, but 
     the goal for now is those 4 energy groups.
-* While a single function gets called, inputs `parmed.Structure` 
+* While a single function gets called in `conversion.py`, inputs a `parmed.Structure` 
 (and possibly optional arguments like in `commpare/hoomd`), and 
 outputs a canonicalized `pandas.DataFrame`, helper functions
 are certainly welcomed and encouraged to enhance readability and debugging
