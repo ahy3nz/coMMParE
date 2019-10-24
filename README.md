@@ -9,13 +9,13 @@ Some overarching goals:
 
 * Validate FF parameter and molecular model translation to
 a particular format or data structure
-* Assess consistency of MD engines in calculating energies
+* Assess consistency of MM engines in calculating energies
 
 The broad steps to compare energy via various permutations:
 
-* Input of molecular model (MD input files, Pythonic creation, etc)
+* Input of molecular model (MM input files, Pythonic creation, etc)
     * These inputs get turned into `parmed.Structure`
-* Output of molecular model for energy calculation (MD engine)
+* Output of molecular model for energy calculation (MM engine)
     * The `parmed.Structure` gets converted to its respective
     MD engine data object/format
 
@@ -32,12 +32,51 @@ structure used.
 * [parmed](https://github.com/ParmEd/ParmEd) [(conda)](https://anaconda.org/omnia/parmed)
 * [openforcefield](https://github.com/openforcefield/openforcefield) [(conda)](https://anaconda.org/omnia/openforcefield)
 
-## MD-interconversion tools
+## MM-interconversion tools
 * [parmed](https://github.com/ParmEd/ParmEd) [(conda)](https://anaconda.org/omnia/parmed)
 * [this mbuild PR](https://github.com/mosdef-hub/mbuild/pull/622)
 
-## MD engines for measuring energy (outputs)
+## MM engines for measuring energy (outputs)
 * [openmm](https://github.com/openmm/openmm) [(conda)](https://anaconda.org/omnia/openmm)
 * [hoomd](https://github.com/glotzerlab/hoomd-blue) [(conda)](https://anaconda.org/conda-forge/hoomd)
 * [gromacs](http://manual.gromacs.org/) [(conda)](https://anaconda.org/bioconda/gromacs)
     * [panedr](https://github.com/jbarnoud/panedr) [(conda)](https://anaconda.org/conda-forge/panedr)
+
+
+# Contributing
+There are multiple ways to expand this testing suite - more MM engines or more 
+reference systems.
+
+## Contributing new MM engine functionality
+* Desired Input: `parmed.Structure` containing molecular model
+* Desired Output: `pandas.DataFrame` containing energies
+* Given a `parmed.Structure` object, be able to use your MM engine to 
+    build your simulation and measure the energy from the intial configuration
+    and molecular model parameters within the `parmed.Structure`. 
+    * If input files need to be written, please use the `tempfile` library
+    to create and dump files to a temp directory
+    * `commpare/gromacs` utilizes temp directories
+* After building your MM engine's simulation, measure the energy and
+"canonicalize" the energy terms.
+    * Ultimately, we want a `pandas.DataFrame` whose `index` is the MM engine
+    with columns: `bond`, `angle`, `dihedral`, `nonbond`. The values should be
+    energies in kJ/mol. The energy breakdown may be further decomposed, but 
+    the goal for now is those 4 energy groups.
+* `md_engines.py` will need to be updated to detect the new MM engine
+* `conversion.py` will need to be updated to convert and run the 
+`parmed.Structure` in the MD engine
+* Add unit tests in `commpare/tests` that, given a `parmed.Structure`, will
+build the particular MM engine's simulation and return the `pandas.DataFrame`
+with canoncalized energy terms.
+
+## Contributing new MM tests
+* The goal is to test different molecular model/force field terms and
+observe how well they translate to different MM engines
+* Ideally, there should be some directory organization to the MM tests such that
+each directory is a particular chemical system understood by `parmed`
+* `reference_systems.py` will need to be updated to detect the locally
+available reference systems against which to test the local MM engines
+* Using `pytest`, put together some test scripts in `commpare/mm_tests` that will
+construct the `parmed.Structure` from the reference systems, then 
+run `commpare.spawn_engine_simulations` to "shotgun" a variety of 
+energy calculations
