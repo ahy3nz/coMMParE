@@ -59,7 +59,7 @@ reference systems.
 * After building your MM engine's simulation, measure the energy and
 "canonicalize" the energy terms.
     * Ultimately, we want a `pandas.DataFrame` whose `index` is the MM engine
-    with columns: `bond`, `angle`, `dihedral`, `nonbond`. The values should be
+    with `columns`: `bond`, `angle`, `dihedral`, `nonbond`. The values should be
     energies in kJ/mol. The energy breakdown may be further decomposed, but 
     the goal for now is those 4 energy groups.
 * While a single function gets called in `conversion.py`, inputs a `parmed.Structure` 
