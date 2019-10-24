@@ -1,0 +1,8 @@
+pandas
+mbuild
+foyer
+openmm
+openforcefield
+parmed
+hoomd
+panedr
