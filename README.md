@@ -17,7 +17,7 @@ The broad steps to compare energy via various permutations:
     * These inputs get turned into `parmed.Structure`
 * Output of molecular model for energy calculation (MM engine)
     * The `parmed.Structure` gets converted to its respective
-    MD engine data object/format
+    MM engine data object/format
 
 While more-sophisticated packaging may come, here is a list of possible dependencies,
 with conda links where available. 
