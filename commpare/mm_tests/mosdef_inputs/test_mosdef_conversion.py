@@ -7,10 +7,11 @@ from commpare.tests.base_test import BaseTest
 
 class TestMosdefConversion(BaseTest):
     reference_systems = commpare.identify_reference_systems()
-    @pytest.mark.skipif('foyer' not in reference_systems, 
+    @pytest.mark.skipif('foyer' in reference_systems, 
             reason="foyer package not installed")
     def test_small_systems(self):
         import foyer
+        # These tests are gro/top files 
         path_to_foyer_unit_tests = os.path.join(foyer.__path__[0],
                 'opls_validation/')
         # Walk through each unit test folder, loading energy and print out
@@ -27,3 +28,21 @@ class TestMosdefConversion(BaseTest):
                     hoomd_kwargs={'ref_distance':10, 'ref_energy':1/4.184})
             print(energies)
             print('='*20)
+
+    @pytest.mark.skipif('foyer' not in reference_systems, 
+            reason="foyer package not installed")
+    @pytest.mark.parametrize("smiles", ['CCCC', 
+        'C1=CC=CC=C1'])
+    def test_smiles(self, smiles):
+        import foyer
+        import mbuild as mb
+        # These tests are smiles strings 
+        cmpd = mb.load(smiles, smiles=True) 
+        ff = foyer.Forcefield(name='oplsaa')
+        structure = ff.apply(cmpd)
+        # Enlarge box to avoid cutoff issues
+        structure.box = [100, 100, 100, 90, 90, 90]
+        energies = commpare.spawn_engine_simulations(structure,
+                hoomd_kwargs={'ref_distance':10, 'ref_energy':1/4.184})
+        print(energies)
+        print('='*20)
