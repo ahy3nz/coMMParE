@@ -71,7 +71,7 @@ reference systems.
 (and possibly optional arguments like in `commpare/hoomd`), and 
 outputs a canonicalized `pandas.DataFrame`, helper functions
 are certainly welcomed and encouraged to enhance readability and debugging
-* `md_engines.py` will need to be updated to detect the new MM engine
+* `mm_engines.py` will need to be updated to detect the new MM engine
 * `conversion.py` will need to be updated to convert and run the 
 `parmed.Structure` in the MD engine
 * Add unit tests in `commpare/tests` that, given a `parmed.Structure`, will
