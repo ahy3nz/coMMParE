@@ -19,13 +19,13 @@ class TestMosdefConversion(BaseTest):
                 if (os.path.isdir(os.path.join(path_to_foyer_unit_tests,folder))
                     and 'oplsaa.ff' not in folder)]
         for unit_test_dir in unit_dirs:
-            print(unit_test_dir)
             os.chdir(os.path.join(path_to_foyer_unit_tests, unit_test_dir))
             top_file = glob.glob("*.top")[0]
             gro_file = glob.glob("*.gro")[0]
             structure = pmd.load_file(top_file, xyz=gro_file)
             energies = commpare.spawn_engine_simulations(structure,
                     hoomd_kwargs={'ref_distance':10, 'ref_energy':1/4.184})
+            print(unit_test_dir)
             print(energies)
             print('='*20)
 
@@ -44,6 +44,7 @@ class TestMosdefConversion(BaseTest):
         structure.box = [100, 100, 100, 90, 90, 90]
         energies = commpare.spawn_engine_simulations(structure,
                 hoomd_kwargs={'ref_distance':10, 'ref_energy':1/4.184})
+        print(smiles)
         print(energies)
         print('='*20)
 
@@ -64,6 +65,7 @@ class TestMosdefConversion(BaseTest):
             structure.combining_rule = 'lorentz'
             energies = commpare.spawn_engine_simulations(structure,
                     hoomd_kwargs={'ref_distance':10, 'ref_energy':1/4.184})
+            print('Alkane, n={}'.format(i))
             print(energies)
             print('='*20)
 
@@ -73,6 +75,7 @@ class TestMosdefConversion(BaseTest):
         structure.combining_rule = 'lorentz'
         energies = commpare.spawn_engine_simulations(structure,
                 hoomd_kwargs={'ref_distance':10, 'ref_energy':1/4.184})
+        print("Ethane")
         print(energies)
         print('='*20)
 
@@ -82,22 +85,7 @@ class TestMosdefConversion(BaseTest):
         structure.combining_rule = 'lorentz'
         energies = commpare.spawn_engine_simulations(structure,
                 hoomd_kwargs={'ref_distance':10, 'ref_energy':1/4.184})
-        print(energies)
-        print('='*20)
-
-        pmpclayer = PMPCLayer()
-        structure = ff.apply(pmpclayer)
-        structure.combining_rule = 'lorentz'
-        energies = commpare.spawn_engine_simulations(structure,
-                hoomd_kwargs={'ref_distance':10, 'ref_energy':1/4.184})
-        print(energies)
-        print('='*20)
-
-        alkanelayer = AlkaneMonolayer()
-        structure = ff.apply(alkanelayer)
-        structure.combining_rule = 'lorentz'
-        energies = commpare.spawn_engine_simulations(structure,
-                hoomd_kwargs={'ref_distance':10, 'ref_energy':1/4.184})
+        print("Methane")
         print(energies)
         print('='*20)
 
