@@ -1,3 +1,4 @@
+import warnings
 import pandas as pd
 import simtk.openmm as openmm
 import simtk.unit as unit
@@ -54,7 +55,7 @@ def get_omm_force_groups(omm_context):
         elif isinstance(force, openmm.NonbondedForce):
             omm_force_groups['nonbond'].add(force.getForceGroup())
         else:
-            print("OMM Force {} unrecognized, ignoring".format(force))
+            warnings.warn("OMM Force {} unrecognized, ignoring".format(force))
 
     return omm_force_groups
 
@@ -72,5 +73,5 @@ def set_omm_force_groups(omm_context):
         elif isinstance(force, openmm.NonbondedForce):
             force.setForceGroup(11)
         else:
-            print("OMM Force {} unrecognized, ignoring".format(force))
+            warnings.warn("OMM Force {} unrecognized, ignoring".format(force))
 

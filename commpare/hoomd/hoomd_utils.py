@@ -1,3 +1,4 @@
+import warnings
 import pandas as pd
 
 from mbuild.formats.hoomd_simulation import create_hoomd_simulation
@@ -56,7 +57,7 @@ def get_hoomd_force_groups():
             hoomd_force_groups['nonbond'].append(force)
             hoomd_force_groups['all'].append(force)
         else:
-            print("Hoomd Force {} unrecognized, ignoring".format(force))
+            warnings.warn("Hoomd Force {} unrecognized, ignoring".format(force))
 
     return hoomd_force_groups
 
