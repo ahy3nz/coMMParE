@@ -48,10 +48,9 @@ class TestMosdefConversion(BaseTest):
         print(energies)
         print('='*20)
 
-    @pytest.mark.skipif('mbuild' not in reference_systems, 
-            reason="mbuild package not installed")
-    @pytest.mark.skipif('foyer' not in reference_systems, 
-            reason="foyer package not installed")
+    @pytest.mark.skipif('mbuild' not in reference_systems and 
+            'foyer' not in reference_systems, 
+            reason="mbuild and/or foyer package not installed")
     def test_mbuild_examples(self):
         import mbuild as mb
         from mbuild.examples import (Alkane, Methane, Ethane, 
