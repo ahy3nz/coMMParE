@@ -7,25 +7,22 @@ import hoomd
 
 def build_run_measure_hoomd(structure, **kwargs):
     """ Build and run a HOOMD simulation from a parmed.Structure """
-    try:
-        hoomd.util.quiet_status()
-        hoomd.context.initialize("--msg-file=hoomd.out")
-        create_hoomd_simulation(structure, **kwargs)
+    hoomd.util.quiet_status()
+    hoomd.context.initialize("--msg-file=hoomd.out")
+    create_hoomd_simulation(structure, **kwargs)
 
-        all_group = hoomd.group.all()
-        # Arbitrary small simulation
-        hoomd.md.integrate.mode_standard(dt=0.0000001)
-        hoomd.md.integrate.nve(all_group)
-        hoomd.run(1)
+    all_group = hoomd.group.all()
+    # Arbitrary small simulation
+    hoomd.md.integrate.mode_standard(dt=0.0000001)
+    hoomd.md.integrate.nve(all_group)
+    hoomd.run(1)
 
-        hoomd_force_groups = get_hoomd_force_groups()
-        energies = {'hoomd': {key: get_hoomd_energy(key, 
-                                                    hoomd_force_groups, 
-                                                    all_group) 
-                                                    for key in hoomd_force_groups}}
-        df = pd.DataFrame.from_dict(energies, orient='index')
-    except:
-        df = pd.DataFrame.from_dict({'hoomd':{}}, orient='index')
+    hoomd_force_groups = get_hoomd_force_groups()
+    energies = {'hoomd': {key: get_hoomd_energy(key, 
+                                                hoomd_force_groups, 
+                                                all_group) 
+                                                for key in hoomd_force_groups}}
+    df = pd.DataFrame.from_dict(energies, orient='index')
 
     return df
 
