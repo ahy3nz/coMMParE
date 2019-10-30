@@ -8,6 +8,7 @@ def build_run_measure_hoomd(structure, **kwargs):
     """ Build and run a HOOMD simulation from a parmed.Structure """
     try:
         hoomd.util.quiet_status()
+        hoomd.context.initialize("--msg-file=hoomd.out")
         create_hoomd_simulation(structure, **kwargs)
 
         all_group = hoomd.group.all()
