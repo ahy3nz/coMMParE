@@ -13,8 +13,8 @@ def build_run_measure_hoomd(structure, **kwargs):
 
     all_group = hoomd.group.all()
     # Arbitrary small simulation
-    hoomd.md.integrate.mode_standard(dt=0.0000001)
-    hoomd.md.integrate.nve(all_group)
+    hoomd.md.integrate.mode_standard(dt=0.00001)
+    hoomd.md.integrate.nve(all_group, limit=0.001)
     hoomd.run(1)
 
     hoomd_force_groups = get_hoomd_force_groups()
