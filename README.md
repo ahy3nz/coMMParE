@@ -1,9 +1,12 @@
 # coMMParE - Comparing Molecular Mechanics Potential Energies
 
 The goal of this package is to evaluate energies using
-ParmEd as a middleman.
-Ideas derive slightly from
-[Christoph Klein's `validate` repo](https://github.com/ctk3b/validate).
+ParmEd as a middleman and various molecular mechanics engines
+as the backend for computation.
+Ideas derive from
+[`intermol`](https://github.com/shirtsgroup/InterMol/tree/master/intermol/tests),
+[`parmed`](https://github.com/ParmEd/ParmEd/tree/master/test), 
+[`validate`](https://github.com/ctk3b/validate).
 
 Some overarching goals:
 
@@ -89,3 +92,21 @@ available reference systems against which to test the local MM engines
 construct the `parmed.Structure` from the reference systems, then 
 run `commpare.spawn_engine_simulations` to "shotgun" a variety of 
 energy calculations
+
+# The energies don't agree - what now?
+Here's some spots where things could have gone wrong:
+* Did ParmEd correctly parse your input into a `parmed.Structure`?
+Some functional forms, coefficients, exceptions, scalings, etc. might not be 
+parsed correctly. Check your units and factors of two,
+ParmEd tries to convert units to Angstrom and kcal/mol
+* Did ParmEd or mBuild correctly translate the `parmed.Structure` into
+the engine of choice? Again, some functional forms, coefficients, exceptions, 
+scalings, etc.  might not be be translated correctly. Check your units and
+factors of two
+* Within coMMParE, are certain simulation/force field treatments being
+implemented/treated the same across engines?
+* Within coMMParE, are the molecular mechanics energies 
+compared "apples to apples" and
+canonicalized the same? For example, was an engine's 1,4 LJ energy lumped into
+a dihedral energy, or vice versa? 
+* Lastly, is the engine calculating these functional forms correctly?
