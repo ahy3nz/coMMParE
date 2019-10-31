@@ -5,23 +5,27 @@ import subprocess
 import pandas as pd
 import panedr
 
+from commpare.utils import temporary_directory, temporary_cd
+
 def build_run_measure_gromacs(structure):
-    tmp_dir = tempfile.mkdtemp() # Create a tempdir for any temporary I/O
-    gro_file = '{tmp_dir}/structure.gro'.format(tmp_dir=tmp_dir)
-    top_file = '{tmp_dir}/structure.top'.format(tmp_dir=tmp_dir)
+    with temporary_directory() as tmpdir:
+        with temporary_cd(tmpdir):
 
-    structure.save(gro_file, overwrite=True)
-    structure.save(top_file, overwrite=True)
+            gro_file = 'structure.gro'
+            top_file = 'structure.top'
 
-    mdp_file = write_gmx_mdp(tmp_dir)
-    grompp, mdrun = detect_gmx_binaries()
-    output = run_grompp(grompp, mdp_file, gro_file, top_file, 
-            output='{tmp_dir}/out'.format(tmp_dir=tmp_dir))
-    output = run_mdrun(mdrun, output=output)
+            structure.save(gro_file, overwrite=True)
+            structure.save(top_file, overwrite=True)
 
-    energies  = get_gmx_energy(output + ".edr")
+            mdp_file = write_gmx_mdp()
+            grompp, mdrun = detect_gmx_binaries()
+            output = run_grompp(grompp, mdp_file, gro_file, top_file, 
+                    output='out')
+            output = run_mdrun(mdrun, output=output)
 
-    df = pd.DataFrame.from_dict(energies, orient='index')
+            energies  = get_gmx_energy(output + ".edr")
+
+            df = pd.DataFrame.from_dict(energies, orient='index')
 
     return df 
 
@@ -100,8 +104,8 @@ def detect_gmx_binaries():
 
     return grompp, mdrun
 
-def write_gmx_mdp(tmp_dir):
-    filename = '{tmp_dir}/grompp.mdp'.format(tmp_dir=tmp_dir)
+def write_gmx_mdp():
+    filename = 'grompp.mdp'
     with open(filename, 'w') as mdpfile:
         # Taken from
         # https://github.com/ctk3b/validate/blob/master/validate/tests/gromacs/grompp.mdp
