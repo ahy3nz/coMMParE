@@ -41,7 +41,13 @@ class TestMosdefConversion(BaseTest):
         ff = foyer.Forcefield(name='oplsaa')
         structure = ff.apply(cmpd)
         # Enlarge box to avoid cutoff issues
-        structure.box = [100, 100, 100, 90, 90, 90]
+        bbox = cmpd.boundingbox
+        bbox.lengths *= 10
+        if any(bbox.lengths < 10):
+            bbox.lengths = [100, 100, 100]
+
+        structure.box = [bbox.lengths[0], bbox.lengths[1], bbox.lengths[2],
+                            90, 90, 90]
         energies = commpare.spawn_engine_simulations(structure,
                 hoomd_kwargs={'ref_distance':10, 'ref_energy':1/4.184})
         print(smiles)
@@ -60,7 +66,13 @@ class TestMosdefConversion(BaseTest):
             my_alkane = Alkane(n=i)
             ff = foyer.Forcefield(name='oplsaa')
             structure = ff.apply(my_alkane)
-            structure.box = [100, 100, 100, 90, 90, 90]
+            bbox = my_alkane.boundingbox
+            bbox.lengths *= 10
+            if any(bbox.lengths < 10):
+                bbox.lengths = [100, 100, 100]
+
+            structure.box = [bbox.lengths[0], bbox.lengths[1], bbox.lengths[2],
+                                90, 90, 90]
             structure.combining_rule = 'lorentz'
             energies = commpare.spawn_engine_simulations(structure,
                     hoomd_kwargs={'ref_distance':10, 'ref_energy':1/4.184})
@@ -70,7 +82,14 @@ class TestMosdefConversion(BaseTest):
 
         eth = Ethane()
         structure = ff.apply(eth)
-        structure.box = [100, 100, 100, 90, 90, 90]
+        bbox = eth.boundingbox
+        bbox.lengths *= 10
+        if any(bbox.lengths < 10):
+            bbox.lengths = [100, 100, 100]
+
+        structure.box = [bbox.lengths[0], bbox.lengths[1], bbox.lengths[2],
+                            90, 90, 90]
+
         structure.combining_rule = 'lorentz'
         energies = commpare.spawn_engine_simulations(structure,
                 hoomd_kwargs={'ref_distance':10, 'ref_energy':1/4.184})
@@ -80,7 +99,14 @@ class TestMosdefConversion(BaseTest):
 
         methan = Methane()
         structure = ff.apply(methan)
-        structure.box = [100, 100, 100, 90, 90, 90]
+        bbox = methan.boundingbox
+        bbox.lengths *= 10
+        if any(bbox.lengths < 10):
+            bbox.lengths = [100, 100, 100]
+
+        structure.box = [bbox.lengths[0], bbox.lengths[1], bbox.lengths[2],
+                            90, 90, 90]
+
         structure.combining_rule = 'lorentz'
         energies = commpare.spawn_engine_simulations(structure,
                 hoomd_kwargs={'ref_distance':10, 'ref_energy':1/4.184})
