@@ -14,6 +14,8 @@ def identify_engines():
         engines.append('amber')
     if detect_desmond():
         engines.append("desmond")
+    if detect_cassandra():
+        engines.append("cassandra")
 
     return engines
 
@@ -37,6 +39,11 @@ def detect_hoomd():
         return True
     except ModuleNotFoundError:
         return False
+
+def detect_cassandra():
+    if shutil.which('cassandra'):
+        return True
+    return False
 
 def detect_amber():
     # Not a supported engine
