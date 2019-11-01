@@ -110,3 +110,13 @@ compared "apples to apples" and
 canonicalized the same? For example, was an engine's 1,4 LJ energy lumped into
 a dihedral energy, or vice versa? 
 * Lastly, is the engine calculating these functional forms correctly?
+
+# Notes and Warnings
+This is **NOT** meant to be your one-stop-shop package to run 
+molecular simulations.
+To **CORRECTLY** run a simulation means using correct simulation parameters,
+consistent software, and reliable force field parameters. 
+This package assumes certain simulation parameters and certain model implementations
+that will likely yield **PHYSICALLY INACCURATE** results.
+While inaccurate, we aim to **CONTROL** for some of these choices
+to validate models and force fields are correctly being translated.
