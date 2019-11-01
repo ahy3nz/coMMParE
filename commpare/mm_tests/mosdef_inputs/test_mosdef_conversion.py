@@ -6,6 +6,17 @@ import commpare
 from commpare.tests.base_test import BaseTest
 
 class TestMosdefConversion(BaseTest):
+
+    def load_smiles():
+        smiles = []
+        with open('smiles.txt', 'r') as fi:
+            for line in fi:
+                if line.startswith('#'):
+                    continue
+                smiles.append(line.strip())
+        return smiles
+
+
     reference_systems = commpare.identify_reference_systems()
     @pytest.mark.skipif('foyer' in reference_systems, 
             reason="foyer package not installed")
@@ -31,8 +42,7 @@ class TestMosdefConversion(BaseTest):
 
     @pytest.mark.skipif('foyer' not in reference_systems, 
             reason="foyer package not installed")
-    @pytest.mark.parametrize("smiles", ['CCCC', 
-        'C1=CC=CC=C1'])
+    @pytest.mark.parametrize("smiles", load_smiles())
     def test_smiles(self, smiles):
         import foyer
         import mbuild as mb
