@@ -16,9 +16,10 @@ class TestMosdefConversion(BaseTest):
                 smiles.append(line.strip())
         return smiles
 
-
     reference_systems = commpare.identify_reference_systems()
-    @pytest.mark.skipif('foyer' in reference_systems, 
+    forcefields = commpare.identify_forcefields()
+
+    @pytest.mark.skipif('foyer' not in reference_systems, 
             reason="foyer package not installed")
     def test_small_systems(self):
         import foyer
@@ -40,15 +41,17 @@ class TestMosdefConversion(BaseTest):
             print(energies)
             print('='*20)
 
-    @pytest.mark.skipif('foyer' not in reference_systems, 
+
+    @pytest.mark.skipif('foyer' not in reference_systems or 
+            'OPLSAA' not in forcefields, 
             reason="foyer package not installed")
     @pytest.mark.parametrize("smiles", load_smiles())
-    def test_smiles(self, smiles):
+    def test_oplsaa(self, smiles):
         import foyer
         import mbuild as mb
         # These tests are smiles strings 
         cmpd = mb.load(smiles, smiles=True) 
-        ff = foyer.Forcefield(name='oplsaa')
+        ff = commpare.identify_forcefields()['OPLSAA']
         structure = ff.apply(cmpd)
         # Enlarge box to avoid cutoff issues
         bbox = cmpd.boundingbox
@@ -63,6 +66,32 @@ class TestMosdefConversion(BaseTest):
         print(smiles)
         print(energies)
         print('='*20)
+
+    @pytest.mark.skipif('foyer' not in reference_systems or 
+            'GAFF' not in forcefields,  
+            reason="foyer or gaff package not installed")
+    @pytest.mark.parametrize("smiles", load_smiles())
+    def test_gaff(self, smiles):
+        import foyer
+        import mbuild as mb
+        # These tests are smiles strings 
+        cmpd = mb.load(smiles, smiles=True) 
+        ff = commpare.identify_forcefields()['GAFF'] 
+        structure = ff.apply(cmpd)
+        # Enlarge box to avoid cutoff issues
+        bbox = cmpd.boundingbox
+        bbox.lengths *= 10
+        if any(bbox.lengths < 10):
+            bbox.lengths = [100, 100, 100]
+
+        structure.box = [bbox.lengths[0], bbox.lengths[1], bbox.lengths[2],
+                            90, 90, 90]
+        energies = commpare.spawn_engine_simulations(structure,
+                hoomd_kwargs={'ref_distance':10, 'ref_energy':1/4.184})
+        print(smiles)
+        print(energies)
+        print('='*20)
+
 
     @pytest.mark.skipif('mbuild' not in reference_systems and 
             'foyer' not in reference_systems, 
