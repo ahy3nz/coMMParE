@@ -41,7 +41,7 @@ def detect_hoomd():
         return False
 
 def detect_cassandra():
-    if shutil.which('cassandra'):
+    if shutil.which('cassandra.exe'):
         return True
     return False
 

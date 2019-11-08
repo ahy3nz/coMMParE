@@ -1,33 +1,51 @@
 import shutil
 import tempfile
+import contextlib
 import subprocess
+import os
 
 import pandas as pd
+import mdtraj
+import mbuild as mb
+
+from mbuild.formats.cassandramcf import write_mcf
 
 def build_run_measure_cassandra(structure):
-    # TODO: Alex, should we use the with: commands here
-    tmp_dir = tempfile.mkdtemp() # Create a tempdir for any temporary I/O
-    mcf_file = '{tmp_dir}/structure.mcf'.format(tmp_dir=tmp_dir)
-    xyz_file = '{tmp_dir}/structure.xyz'.format(tmp_dir=tmp_dir)
 
-    structure.save(mcf_file)
-    structure.save(xyz_file)
-
-    inp_file = write_cassandra_inp(tmp_dir)
     fraglib_setup, cassandra = detect_cassandra_binaries()
-    output = run_fraglib_setup(fraglib_setup, cassandra, inp_file, mcf_file,
-            output='{tmp_dir}/out'.format(tmp_dir=tmp_dir))
-    output = run_cassandra(cassandra, inp_file, mcf_file, xyz_file, output=output)
+    workdir = os.getcwd()
+    mcf_file = 'structure.mcf'
+    xyz_file = 'structure.xyz'
+    pdb_file = 'structure.pdb'
 
-    energies = get_cassandra_energy(output + ".edr")
+    with temporary_directory() as tmp_dir:
+        with temporary_cd(tmp_dir):
+            # Guess dihedral type...from contents of structure
+            if len(structure.dihedrals) > 0:
+                dihedral_style = 'charmm'
+            else:
+                dihedral_style = 'opls'
+            write_mcf(structure,mcf_file,angle_style='harmonic',
+                    dihedral_style=dihedral_style)
+            mb.load(structure).save(xyz_file)
+            mb.load(structure).to_trajectory().save_pdb(pdb_file)
+
+            inp_file,output = write_cassandra_inp()
+            successful_fraglib = run_fraglib_setup(fraglib_setup, cassandra,
+                                 inp_file, mcf_file, pdb_file, workdir)
+            if successful_fraglib:
+                run_cassandra(cassandra, inp_file, workdir)
+                energies = get_cassandra_energy(output + '.log')
+            else:
+                print("Cassandra failed due to unsuccessful fragment generation")
 
     df = pd.DataFrame.from_dict(energies, orient='index')
 
-    return df 
+    return df
 
 def get_cassandra_energy(prpfile):
     """ Parse and canonicalize energies from cassandra prp file
-    
+
     Notes
     -----
     Cassandra energy units are kJ/mol
@@ -35,61 +53,72 @@ def get_cassandra_energy(prpfile):
     does not support writing bond/angle/dihedral energies
     """
 
-    cassandra_force_groups = {'cassandra': {}} 
-    key_to_col = {'bond': None, 
-                 'angle': None, 
-              'dihedral': None, 
-               'nonbond':['Energy_LJ', 'Energy_Elec'], 
-                   'all':['Energy_Total']} 
-    
-    prp_df = pd.read_fwf(prpfile,header=1,comment="#") 
-    
-    for canonical_name, df_cols in key_to_col.items(): 
-        if df_cols is not None: 
-            cassandra_force_groups['cassandra'][canonical_name] = sum([ 
-                                    float(prp_df.iloc[1][col]) for col in df_cols 
-                                    if col in prp_df.columns]) 
-        else: 
-            cassandra_force_groups['cassandra'][canonical_name] = 'N/A' 
+    cassandra_force_groups = {'cassandra': {}}
+    key_to_data = {'bond':['Bondenergy'],
+                  'angle':['Bondangleenergy'],
+               'dihedral':['Dihedralangleenergy'],
+                'nonbond':['Intramoleculevdw','Intramoleculeq','Intermoleculevdw',
+                           'Intermoleculeq', 'Reciprocalewald','Selfewald'],
+                    'all':['Totalsystemenergy']}
+
+    prp_dict = {}
+    read_lines = False
+    with open(prpfile) as f:
+        for line in f:
+            if line.strip() == 'Compute total energy':
+                read_lines = True
+            if read_lines == True and line.strip().split() != []:
+                key = ''
+                for word in line.strip().split()[:-1]:
+                    key += word
+                val = line.strip().split()[-1]
+                prp_dict[key] = val
+
+
+    #Factor to convert atomic energy (amu A^2/ ps^2) to kJ/mol
+    atomic_to_kJmol = 0.01
+    for canonical_name, cass_names in key_to_data.items():
+        if cass_names is not None:
+            cassandra_force_groups['cassandra'][canonical_name] = sum([
+                                    float(prp_dict[item])*atomic_to_kJmol
+                                    for item in cass_names
+                                    if item in prp_dict.keys()])
+        else:
+            cassandra_force_groups['cassandra'][canonical_name] = 'N/A'
 
     return cassandra_force_groups
 
-def run_fraglib_setup(fraglib_setup,cassandra,inp_file,mcf_file,pdb_file,output='out'):
+def run_fraglib_setup(fraglib_setup,cassandra,inp_file,mcf_file,pdb_file,workdir):
     fraglib_cmd = ('python2 {fraglib_setup} {cassandra} '.format(fraglib_setup=fraglib_setup,
-                                                                  cassandra=cassandra) + 
+                                                                  cassandra=cassandra) +
                    '{inp_file} {pdb_file}'.format(inp_file=inp_file, pdb_file= pdb_file))
     p = subprocess.Popen(fraglib_cmd,
             shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             universal_newlines=True)
     out,err = p.communicate()
-    with open ('casssandra_fraglib.out', 'w') as fraglib_out:
+    with open (workdir+'/casssandra_fraglib.out', 'w') as fraglib_out:
         fraglib_out.write(out)
-    with open ('casssandra_fraglib.err', 'w') as fraglib_err:
+    with open (workdir+'/casssandra_fraglib.err', 'w') as fraglib_err:
         fraglib_err.write(err)
     if p.returncode != 0:
         print('Cassandra fragment library generation failed, '
               'see cassandra_fraglib.err')
+        return False
+    return True
 
-    # TODO: Alex, what is going on here? 
-    return output
-
-def run_cassandra(cassandra, inp_file):
+def run_cassandra(cassandra, inp_file, workdir):
     cassandra_cmd = ('{cassandra} {inp_file}'.format(cassandra=cassandra,
                                                      inp_file=inp_file))
     p = subprocess.Popen(cassandra_cmd,
             shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             universal_newlines=True)
     out,err = p.communicate()
-    with open ('casssandra.out', 'w') as fraglib_out:
-        fraglib_out.write(out)
-    with open ('casssandra.err', 'w') as fraglib_err:
-        fraglib_err.write(err)
+    with open (workdir+'/casssandra.out', 'w') as fout:
+        fout.write(out)
+    with open (workdir+'/casssandra.err', 'w') as ferr:
+        ferr.write(err)
     if p.returncode != 0:
         print('Cassandra failed, see cassandra.err')
-
-    # TODO: Alex, what is going on here? 
-    return output
-
 
 def detect_cassandra_binaries():
 
@@ -100,15 +129,19 @@ def detect_cassandra_binaries():
         raise ValueError("Error detecting cassandra. Both 'cassandra.exe' and "
                          "library_setup.py must be in your PATH")
 
+    if shutil.which('python2') is None:
+        raise ValueError("Error detecting python2. library_setup.py requires python2")
+
     return fraglib_setup, cassandra
 
-def write_cassandra_inp(tmp_dir):
-    filename = '{tmp_dir}/enertest.inp'.format(tmp_dir=tmp_dir)
+def write_cassandra_inp():
+    filename = 'enertest.inp'
+    output = 'enertest.out'
     with open(filename, 'w') as inpfile:
         inpfile.write("""! Input file for testing energies
 
 # Run_Name
-enertest.out
+{output}
 !------------------------------------------------------------------------------
 
 # Sim_Type
@@ -151,7 +184,7 @@ cubic
 
 # Move_Probability_Info
 !------------------------------------------------------------------------------
-!-------------------------Choices don't matter for the single frame energy calc 
+!-------------------------Choices don't matter for the single frame energy calc
 
 # Prob_Translation
 1
@@ -183,7 +216,7 @@ coord_freq   1
 run          0
 !------------------------------------------------------------------------------
 
-# Property_Info 1 
+# Property_Info 1
 energy_lj
 energy_elec
 energy_total
@@ -198,9 +231,30 @@ rcut_cbmc 6.5
 
 # Fragment_Files
 !------------------------------------------------------------------------------
-!------------------------------frag_library_setup.py will autofill this section 
+!------------------------------frag_library_setup.py will autofill this section
 
-END""")
+END""".format(output=output))
 
-    return filename
+    return filename,output
+
+@contextlib.contextmanager
+def temporary_cd(dir_path):
+    import os
+    prev_dir = os.getcwd()
+    os.chdir(os.path.abspath(dir_path))
+    try:
+        yield
+    finally:
+        os.chdir(prev_dir)
+
+@contextlib.contextmanager
+def temporary_directory():
+    import shutil
+    import tempfile
+    tmp_dir = tempfile.mkdtemp()
+    try:
+        yield tmp_dir
+    finally:
+        shutil.rmtree(tmp_dir)
+
 
