@@ -33,6 +33,7 @@ structure used.
 ## Creating and parametrizing molecular models (inputs)
 * [mbuild](https://github.com/mosdef-hub/mbuild) [(conda)](https://anaconda.org/mosdef/mbuild)
 * [foyer](https://github.com/mosdef-hub/foyer) [(conda)](https://anaconda.org/mosdef/foyer)
+    * [gaff-foyer](https://github.com/rsdefever/GAFF-foyer)
 * [parmed](https://github.com/ParmEd/ParmEd) [(conda)](https://anaconda.org/omnia/parmed)
 * [openforcefield](https://github.com/openforcefield/openforcefield) [(conda)](https://anaconda.org/omnia/openforcefield)
 
