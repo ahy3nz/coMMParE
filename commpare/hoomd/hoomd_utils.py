@@ -3,6 +3,7 @@ import pandas as pd
 
 from mbuild.formats.hoomd_simulation import create_hoomd_simulation
 import hoomd
+import hoomd.md
 
 
 def build_run_measure_hoomd(structure, **kwargs):
@@ -33,10 +34,10 @@ def get_hoomd_force_groups():
     -------
     hoomd_force_groups : dictionary
         string : list of hoomd force objects
-        Keys are 'bond', 'angle', 'dihedral', 'nonbond', 'all'
+        Keys are 'bond', 'angle', 'dihedral', 'LJ', 'QQ', 'nonbond', 'all'
         """
     hoomd_force_groups = {'bond':[], 'angle':[], 
-            'dihedral':[], 'nonbond':[], 'all':[]}
+            'dihedral':[], 'LJ':[], 'QQ':[], 'nonbond':[], 'all':[]}
 
     for force in hoomd.context.current.forces:
         if force.__module__ == 'hoomd.md.bond':
@@ -48,9 +49,15 @@ def get_hoomd_force_groups():
         elif force.__module__ == 'hoomd.md.dihedral':
             hoomd_force_groups['dihedral'].append(force)
             hoomd_force_groups['all'].append(force)
-        elif (force.__module__ == 'hoomd.md.pair' or
-                force.__module__ == 'hoomd.md.special_pair' or
-                force.__module__ == 'hoomd.md.charge'):
+        elif (isinstance(force, hoomd.md.pair.lj) or
+                isinstance(force, hoomd.md.special_pair.lj)):
+            hoomd_force_groups['LJ'].append(force)
+            hoomd_force_groups['nonbond'].append(force)
+            hoomd_force_groups['all'].append(force)
+        elif (isinstance(force, hoomd.md.charge.pppm) or
+                isinstance(force, hoomd.md.pair.ewald) or
+                isinstance(force, hoomd.md.special_pair.coulomb)):
+            hoomd_force_groups['QQ'].append(force)
             hoomd_force_groups['nonbond'].append(force)
             hoomd_force_groups['all'].append(force)
         else:

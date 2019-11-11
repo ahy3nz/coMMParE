@@ -40,6 +40,8 @@ def get_gmx_energy(edrfile):
     key_to_col = {'bond':['Bond'], 
             'angle':['Angle'], 
             'dihedral':['Proper Dih.', 'Ryckaert-Bell.'],
+            'LJ': ['LJ-14', 'LJ (SR)'],
+            'QQ': ['Coulomb-14', 'Coulomb (SR)'],
             'nonbond':['LJ-14', 'Coulomb-14', 'LJ (SR)', 'Coulomb (SR)'],
             'all':['Potential']}
 
