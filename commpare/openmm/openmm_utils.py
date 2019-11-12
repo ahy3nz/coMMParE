@@ -3,7 +3,8 @@ import pandas as pd
 import simtk.openmm as openmm
 import simtk.unit as unit
 
-
+# After having written this, it looks like ParmEd already
+# did something similar for OpenMM energy decompositions
 def build_run_measure_openmm(structure, **kwargs):
     """ Build OpenMM simulation from a parmed.Structure """
     omm_system = structure.createSystem()
@@ -14,13 +15,51 @@ def build_run_measure_openmm(structure, **kwargs):
 
     set_omm_force_groups(omm_context)
     omm_force_groups = get_omm_force_groups(omm_context)
-    energies = {'openmm': {key: get_omm_energy(key, 
+
+    # To decompose OpenMM's nonbonded force into LJ, QQ, and total energies
+    # This requires updating the particle parameters to "zero out"
+    # charges to get the LJ energy. 
+    # The QQ energy is then the total nonbond energy minus LJ energy
+    energies_total = {'openmm': {key: get_omm_energy(key, 
                                                 omm_force_groups, 
                                                 omm_context)._value
                                                 for key in omm_force_groups}}
-    df = pd.DataFrame.from_dict(energies, orient='index')
+
+    original_particle_parameters = zero_out_qq(omm_system, omm_context, 
+            original_particle_parameters=None)
+    energies_lj = {'openmm': {key: get_omm_energy(key, 
+                                                omm_force_groups, 
+                                                omm_context)._value
+                                                for key in omm_force_groups}}
+
+    energies_total['openmm']['LJ'] = energies_lj['openmm']['nonbond']
+    energies_total['openmm']['QQ'] = (energies_total['openmm']['nonbond'] - 
+            energies_total['openmm']['LJ'])
+    df = pd.DataFrame.from_dict(energies_total, orient='index')
+    df = df[['bond', 'angle', 'dihedral', 'LJ', 'QQ', 'nonbond', 'all']]
 
     return df
+
+def zero_out_qq(omm_system, omm_context,
+        original_particle_parameters=None):
+    """ For all OpenMM particle parameters, set charge to 0 """
+    build_original_pparams = False
+    if original_particle_parameters is None:
+        original_particle_parameters = []
+        build_original_pparams = True
+    for force in omm_context.getSystem().getForces():
+        if isinstance(force, openmm.NonbondedForce):
+            for i in range(force.getNumParticles()):
+                if build_original_pparams:
+                    original_particle_parameters.append(
+                            force.getParticleParameters(i))
+                force.setParticleParameters(i,
+                        0.0,
+                        original_particle_parameters[i][1],
+                        original_particle_parameters[i][2])
+            force.updateParametersInContext(omm_context)
+
+    return original_particle_parameters
 
 def get_omm_energy(key, omm_force_groups, omm_context):
     """ Calculate energy for a set of openmm force groups 
@@ -69,6 +108,7 @@ def set_omm_force_groups(omm_context):
             force.setForceGroup(12)
         elif isinstance(force, openmm.NonbondedForce):
             force.setForceGroup(11)
+            force.setCutoffDistance(2)
         else:
             warnings.warn("OMM Force {} unrecognized, ignoring".format(force))
 
