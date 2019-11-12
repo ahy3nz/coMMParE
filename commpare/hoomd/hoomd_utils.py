@@ -25,6 +25,8 @@ def build_run_measure_hoomd(structure, **kwargs):
                                                 for key in hoomd_force_groups}}
     df = pd.DataFrame.from_dict(energies, orient='index')
 
+    df = df[['bond', 'angle', 'dihedral', 'LJ', 'QQ', 'nonbond', 'all']]
+
     return df
 
 def get_hoomd_force_groups():

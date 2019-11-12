@@ -27,6 +27,8 @@ def build_run_measure_gromacs(structure):
 
             df = pd.DataFrame.from_dict(energies, orient='index')
 
+            df = df[['bond', 'angle', 'dihedral', 'LJ', 'QQ', 'nonbond', 'all']]
+
     return df 
 
 def get_gmx_energy(edrfile):

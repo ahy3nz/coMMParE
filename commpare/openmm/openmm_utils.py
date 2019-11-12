@@ -36,6 +36,7 @@ def build_run_measure_openmm(structure, **kwargs):
     energies_total['openmm']['QQ'] = (energies_total['openmm']['nonbond'] - 
             energies_total['openmm']['LJ'])
     df = pd.DataFrame.from_dict(energies_total, orient='index')
+    df = df[['bond', 'angle', 'dihedral', 'LJ', 'QQ', 'nonbond', 'all']]
 
     return df
 
