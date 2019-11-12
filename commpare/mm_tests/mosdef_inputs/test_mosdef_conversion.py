@@ -4,6 +4,8 @@ import pytest
 import parmed as pmd
 import commpare
 from commpare.tests.base_test import BaseTest
+import pandas as pd
+pd.options.display.float_format='{:8f}'.format
 
 class TestMosdefConversion(BaseTest):
 
