@@ -41,8 +41,17 @@ def detect_hoomd():
         return False
 
 def detect_cassandra():
-    if shutil.which('cassandra.exe'):
-        return True
+    cassandra_exec_names = [ 'cassandra.exe',
+                             'cassandra_gfortran.exe',
+                             'cassandra_pgfortran.exe',
+                             'cassandra_gfortran_openMP.exe',
+                             'cassandra_pgfortran_openMP.exe',
+                             'cassandra_intel_openMP.exe' ]
+
+    for name in cassandra_exec_names:
+        if shutil.which(name):
+            return True
+
     return False
 
 def detect_amber():
