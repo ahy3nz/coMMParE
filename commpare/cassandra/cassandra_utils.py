@@ -12,7 +12,7 @@ from mbuild.formats.cassandramcf import write_mcf
 
 def build_run_measure_cassandra(structure):
 
-    fraglib_setup, cassandra = detect_cassandra_binaries()
+    py2, fraglib_setup, cassandra = detect_cassandra_binaries()
     workdir = os.getcwd()
     mcf_file = 'structure.mcf'
     xyz_file = 'structure.xyz'
@@ -31,8 +31,9 @@ def build_run_measure_cassandra(structure):
             mb.load(structure).to_trajectory().save_pdb(pdb_file)
 
             inp_file,output = write_cassandra_inp()
-            successful_fraglib = run_fraglib_setup(fraglib_setup, cassandra,
-                                 inp_file, mcf_file, pdb_file, workdir)
+            successful_fraglib = run_fraglib_setup(py2, fraglib_setup,
+                                 cassandra, inp_file, mcf_file, pdb_file,
+                                 workdir)
             if successful_fraglib:
                 run_cassandra(cassandra, inp_file, workdir)
                 energies = get_cassandra_energy(output + '.log')
@@ -88,8 +89,9 @@ def get_cassandra_energy(prpfile):
 
     return cassandra_force_groups
 
-def run_fraglib_setup(fraglib_setup,cassandra,inp_file,mcf_file,pdb_file,workdir):
-    fraglib_cmd = ('python2 {fraglib_setup} {cassandra} '.format(fraglib_setup=fraglib_setup,
+def run_fraglib_setup(py2, fraglib_setup,cassandra,inp_file,mcf_file,pdb_file,workdir):
+    fraglib_cmd = ('{python2} {fraglib_setup} {cassandra} '.format(python2=py2,
+                                                                  fraglib_setup=fraglib_setup,
                                                                   cassandra=cassandra) +
                    '{inp_file} {pdb_file}'.format(inp_file=inp_file, pdb_file= pdb_file))
     p = subprocess.Popen(fraglib_cmd,
@@ -154,7 +156,7 @@ def detect_cassandra_binaries():
     print("library_setup: {}".format(fraglib_setup))
     print("Cassandra: {}".format(cassandra))
 
-    return fraglib_setup, cassandra
+    return py2, fraglib_setup, cassandra
 
 def write_cassandra_inp():
     filename = 'enertest.inp'
