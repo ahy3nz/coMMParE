@@ -14,6 +14,8 @@ def identify_engines():
         engines.append('amber')
     if detect_desmond():
         engines.append("desmond")
+    if detect_cassandra():
+        engines.append("cassandra")
 
     return engines
 
@@ -37,6 +39,20 @@ def detect_hoomd():
         return True
     except ModuleNotFoundError:
         return False
+
+def detect_cassandra():
+    cassandra_exec_names = [ 'cassandra.exe',
+                             'cassandra_gfortran.exe',
+                             'cassandra_pgfortran.exe',
+                             'cassandra_gfortran_openMP.exe',
+                             'cassandra_pgfortran_openMP.exe',
+                             'cassandra_intel_openMP.exe' ]
+
+    for name in cassandra_exec_names:
+        if shutil.which(name):
+            return True
+
+    return False
 
 def detect_amber():
     # Not a supported engine
